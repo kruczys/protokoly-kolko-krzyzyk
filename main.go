@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type GameBoard struct {
-	GameID int64    `json:"game_id"`
+	GameID string   `json:"game_id"`
 	Board  []string `json:"board"`
 }
 
@@ -16,26 +18,31 @@ var (
 	emptyBoard         = []string{"---", "---", "---"}
 )
 
+func createGame(c *gin.Context) {
+	var newGame GameBoard
+	gameID += 1
+	newGame.GameID = strconv.FormatInt(gameID, 10)
+	newGame.Board = emptyBoard
+	currentGames = append(currentGames, newGame)
+	c.IndentedJSON(http.StatusCreated, newGame)
+}
+
 func getGameBoardByID(c *gin.Context) {
 	id := c.Param("id")
 
 	for _, g := range currentGames {
-		if string(g.GameID) == id {
+		if g.GameID == id {
 			c.IndentedJSON(http.StatusOK, g)
 			return
 		}
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Game not found with given ID"})
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("Game not found with ID of %s", id)})
 }
 
-func createGame(c *gin.Context) {
-	var newGame GameBoard
-	gameID += 1
-	newGame.GameID = gameID
-	newGame.Board = emptyBoard
-	currentGames = append(currentGames, newGame)
-	c.IndentedJSON(http.StatusCreated, newGame)
+func deleteGameByID(c *gin.Context) {
+	id := c.Param("id")
+	return
 }
 
 func main() {
